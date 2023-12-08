@@ -23,7 +23,7 @@ class ArticleController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Author parameter is required.']);
         }
 
-        $result = Article::where('author', 'like', '%' . $author . '%')->get();
+        $result = Article::query()->where('author', 'like', '%' . $author . '%')->get();
         return response()->json(['status' => 'success', 'data' => $result]);
     }
 
@@ -33,11 +33,12 @@ class ArticleController extends Controller
         $source = $request->input('source');
         $category = $request->input('category');
 
-        if (!$date || !$source || !$category) {
-            return response()->json(['status' => 'error', 'message' => 'Date or category or source parameter is required.']);
+        if (!$date && !$source && !$category) {
+            return response()->json(['status' => 'error', 'message' => 'At least one parameter (date, category, or source) is required.']);
         }
 
-        $result = Article::where('publish_date', $date)
+        $result = Article::query()
+            ->where('publish_date', $date)
             ->orWhere('source', $source)
             ->orWhere('category', $category)
             ->get();
@@ -55,7 +56,7 @@ class ArticleController extends Controller
             return response()->json(['status' => 'error', 'message' => 'At least one author or source or category parameter is required.']);
         }
 
-        $result = Article::when($selectedAuthors, function ($query) use ($selectedAuthors) {
+        $result = Article::query()->when($selectedAuthors, function ($query) use ($selectedAuthors) {
             $query->whereIn('author', $selectedAuthors);
         })
             ->when($selectedSources, function ($query) use ($selectedSources) {
